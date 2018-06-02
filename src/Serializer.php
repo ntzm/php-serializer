@@ -211,7 +211,15 @@ final class Serializer implements SerializerInterface
             }
 
             $inner .= $this->serialize($propertyName);
-            $inner .= $this->serialize($property->getValue($object));
+
+            $value = $property->getValue($object);
+
+            if ($value === $object) {
+                // todo how does this work
+                $inner .= 'r:1;';
+            } else {
+                $inner .= $this->serialize($value);
+            }
         }
 
         return sprintf(

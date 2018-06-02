@@ -31,6 +31,9 @@ final class SerializerTest extends TestCase
 
     public function provideTestCases(): array
     {
+        $selfReferencingStdClass = new stdClass();
+        $selfReferencingStdClass->a = $selfReferencingStdClass;
+
         return [
             'empty string' => [''],
             'normal string' => ['foo'],
@@ -71,6 +74,7 @@ final class SerializerTest extends TestCase
             'instance implements serializable' => [new ClassWithSerializable()],
             'stdclass instance' => [(object) ['foo' => (object) ['bar']]],
             'empty stdclass' => [new stdClass()],
+            'self-referencing stdclass' => [$selfReferencingStdClass],
 
             'resource' => [fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'rb')],
         ];

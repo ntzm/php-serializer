@@ -34,6 +34,10 @@ final class SerializerTest extends TestCase
         $selfReferencingStdClass = new stdClass();
         $selfReferencingStdClass->a = $selfReferencingStdClass;
 
+        $selfReferencingArray = [1];
+        $selfReferencingArray[1] = &$selfReferencingArray[0];
+        $selfReferencingArray[2] = &$selfReferencingArray[1];
+
         return [
             'empty string' => [''],
             'normal string' => ['foo'],
@@ -65,6 +69,7 @@ final class SerializerTest extends TestCase
             'nan' => [NAN],
 
             'empty array' => [[]],
+            'self-referencing array' => [$selfReferencingArray],
 
             'instance' => [new ClassWithProperties()],
             'instance with inherited properties 1' => [new ClassWithInheritedProperties()],

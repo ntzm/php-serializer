@@ -69,7 +69,7 @@ final class SerializerTest extends TestCase
             'instance with properties from trait' => [new ClassWithTraitWithProperties()],
             'instance with __sleep' => [new ClassWithSleep()],
             'instance implements serializable' => [new ClassWithSerializable()],
-            'stclass instance' => [(object) ['foo' => (object) ['bar']]],
+            'stdclass instance' => [(object) ['foo' => (object) ['bar']]],
             'empty stdclass' => [new stdClass()],
 
             'resource' => [fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'rb')],

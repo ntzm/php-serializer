@@ -34,9 +34,9 @@ final class SerializerTest extends TestCase
         $selfReferencingStdClass = new stdClass();
         $selfReferencingStdClass->a = $selfReferencingStdClass;
 
-        $selfReferencingArray = [1];
-        $selfReferencingArray[1] = &$selfReferencingArray[0];
+        $selfReferencingArray = ['foo', 'bar'];
         $selfReferencingArray[2] = &$selfReferencingArray[1];
+        $selfReferencingArray[3] = &$selfReferencingArray[2];
 
         return [
             'empty string' => [''],

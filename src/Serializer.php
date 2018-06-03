@@ -116,10 +116,58 @@ final class Serializer implements SerializerInterface
         $inner = '';
 
         foreach ($array as $key => $value) {
-            $inner .= $this->serialize($key).$this->serialize($value);
+            $reference = $this->getReferencePosition($array, $key);
+
+            $inner .= $this->serialize($key);
+
+            if ($reference === null) {
+                $inner .= $this->serialize($value);
+            } else {
+                $inner .= "R:{$reference};";
+            }
         }
 
         return sprintf('a:%d:{%s}', count($array), $inner);
+    }
+
+    private function getReferencePosition(array $array, $key): ?int
+    {
+        // Start at position 2, as position 1 is the array itself
+        $position = 2;
+
+        foreach ($array as $i => $item) {
+            if ($i === $key) {
+                ++$position;
+
+                continue;
+            }
+
+            if ($array[$i] !== $array[$key]) {
+                ++$position;
+
+                continue;
+            }
+
+            // Get the initial value of the element
+            $initial = $array[$key];
+
+            // Set it to a new object, as objects only pass === tests if they
+            // are the same instance
+            $array[$key] = new class() {};
+
+            // If the current item is the same instance that we just set, we
+            // know they are referencing each other
+            if ($array[$i] === $array[$key]) {
+                $array[$key] = $initial;
+
+                return $position;
+            }
+
+            $array[$key] = $initial;
+            ++$position;
+        }
+
+        return null;
     }
 
     /** @throws Exception */

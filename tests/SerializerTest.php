@@ -34,9 +34,13 @@ final class SerializerTest extends TestCase
         $selfReferencingStdClass = new stdClass();
         $selfReferencingStdClass->a = $selfReferencingStdClass;
 
-        $selfReferencingArray = ['foo', 'bar'];
-        $selfReferencingArray[2] = &$selfReferencingArray[1];
-        $selfReferencingArray[3] = &$selfReferencingArray[2];
+        $stdClassReferenceInside = new stdClass();
+        $stdClassReferenceInside->a = new stdClass();
+        $stdClassReferenceInside->b = $stdClassReferenceInside->a;
+
+        $arrayReferenceInside = ['foo', 'bar'];
+        $arrayReferenceInside[2] = &$arrayReferenceInside[1];
+        $arrayReferenceInside[3] = &$arrayReferenceInside[2];
 
         return [
             'empty string' => [''],
@@ -69,7 +73,7 @@ final class SerializerTest extends TestCase
             'nan' => [NAN],
 
             'empty array' => [[]],
-            'self-referencing array' => [$selfReferencingArray],
+            'self-referencing array' => [$arrayReferenceInside],
 
             'instance' => [new ClassWithProperties()],
             'instance with inherited properties 1' => [new ClassWithInheritedProperties()],
@@ -79,6 +83,7 @@ final class SerializerTest extends TestCase
             'instance implements serializable' => [new ClassWithSerializable()],
             'stdclass instance' => [(object) ['foo' => (object) ['bar']]],
             'empty stdclass' => [new stdClass()],
+            'stdclass reference inside' => [$stdClassReferenceInside],
             'self-referencing stdclass' => [$selfReferencingStdClass],
 
             'resource' => [fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'rb')],

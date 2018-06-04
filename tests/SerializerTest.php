@@ -116,7 +116,7 @@ final class SerializerTest extends TestCase
         $this->expectException(Notice::class);
         $this->expectExceptionMessage('"c" returned as member variable from __sleep() but does not exist');
 
-        (new Serializer)->serialize(new ClassWithSleepInParentReferencingPrivateProperty());
+        (new Serializer())->serialize(new ClassWithSleepInParentReferencingPrivateProperty());
     }
 
     public function testSleepReturningNonArray(): void

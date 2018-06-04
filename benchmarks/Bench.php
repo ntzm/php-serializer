@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ntzm\Benchmarks\Serializer;
 
 use PhpBench\Benchmark\Metadata\Annotations\Iterations;

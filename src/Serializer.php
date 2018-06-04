@@ -6,21 +6,21 @@ namespace Ntzm\Serializer;
 
 use Closure;
 use Exception;
-use function is_string;
-use function is_int;
-use function is_float;
-use function is_array;
-use function is_object;
 use ReflectionClass;
 use ReflectionObject;
 use ReflectionProperty;
 use Serializable;
-use function strlen;
 use function count;
-use function sprintf;
-use function is_nan;
-use function is_resource;
 use function in_array;
+use function is_array;
+use function is_float;
+use function is_int;
+use function is_nan;
+use function is_object;
+use function is_resource;
+use function is_string;
+use function sprintf;
+use function strlen;
 
 final class Serializer implements SerializerInterface
 {
@@ -153,7 +153,8 @@ final class Serializer implements SerializerInterface
 
             // Set it to a new object, as objects only pass === tests if they
             // are the same instance
-            $array[$key] = new class() {};
+            $array[$key] = new class() {
+            };
 
             // If the current item is the same instance that we just set, we
             // know they are referencing each other

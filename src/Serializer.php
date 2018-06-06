@@ -196,7 +196,7 @@ final class Serializer implements SerializerInterface
         /** @var ReflectionProperty[] $properties */
         $properties = array_filter(
             $reflection->getProperties(),
-            function (ReflectionProperty $property): bool {
+            static function (ReflectionProperty $property): bool {
                 return !$property->isStatic();
             }
         );
@@ -208,7 +208,7 @@ final class Serializer implements SerializerInterface
             /** @var ReflectionProperty[] $privateParentProperties */
             $privateParentProperties = array_filter(
                 $parent->getProperties(),
-                function (ReflectionProperty $property): bool {
+                static function (ReflectionProperty $property): bool {
                     return $property->isPrivate() && !$property->isStatic();
                 }
             );
@@ -225,7 +225,7 @@ final class Serializer implements SerializerInterface
 
             $nonExistentProperties = array_diff(
                 $propertiesToKeep,
-                array_map(function (ReflectionProperty $property): string {
+                array_map(static function (ReflectionProperty $property): string {
                     return $property->getName();
                 }, $properties)
             );
@@ -238,7 +238,7 @@ final class Serializer implements SerializerInterface
 
             $properties = array_filter(
                 $properties,
-                function (ReflectionProperty $property) use ($propertiesToKeep): bool {
+                static function (ReflectionProperty $property) use ($propertiesToKeep): bool {
                     return in_array($property->getName(), $propertiesToKeep, true);
                 }
             );

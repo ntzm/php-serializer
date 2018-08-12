@@ -85,6 +85,7 @@ final class SerializerTest extends TestCase
             'empty stdclass' => [new stdClass()],
             'stdclass reference inside' => [$stdClassReferenceInside],
             'self-referencing stdclass' => [$selfReferencingStdClass],
+            'incomplete class' => [unserialize('O:3:"Foo":0:{}')],
 
             'resource' => [fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'rb')],
         ];

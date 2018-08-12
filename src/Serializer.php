@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ntzm\Serializer;
 
+use __PHP_Incomplete_Class;
 use Closure;
 use Exception;
 use ReflectionClass;
@@ -177,6 +178,16 @@ final class Serializer implements SerializerInterface
     {
         $reflection = new ReflectionObject($object);
         $className = $reflection->getName();
+
+        if ($object instanceof __PHP_Incomplete_Class) {
+            $properties = (array) $object;
+
+            $className = $properties['__PHP_Incomplete_Class_Name'];
+            unset($properties['__PHP_Incomplete_Class_Name']);
+
+            $object = (object) $properties;
+            $reflection = new ReflectionObject($object);
+        }
 
         if (strpos($className, 'class@anonymous') === 0) {
             throw new Exception("Serialization of 'class@anonymous' is not allowed");

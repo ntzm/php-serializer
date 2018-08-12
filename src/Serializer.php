@@ -7,9 +7,7 @@ namespace Ntzm\Serializer;
 use __PHP_Incomplete_Class;
 use Closure;
 use Exception;
-use ReflectionClass;
 use ReflectionObject;
-use ReflectionProperty;
 use Serializable;
 use function count;
 use function gettype;
@@ -205,26 +203,7 @@ final class Serializer implements SerializerInterface
             );
         }
 
-        /** @var ReflectionProperty[] $properties */
-        $properties = array_filter(
-            $reflection->getProperties(),
-            static function (ReflectionProperty $property): bool {
-                return !$property->isStatic();
-            }
-        );
-
-        $parent = $reflection->getParentClass();
-        $privateParentProperties = [];
-
-        if ($parent instanceof ReflectionClass) {
-            /** @var ReflectionProperty[] $privateParentProperties */
-            $privateParentProperties = array_filter(
-                $parent->getProperties(),
-                static function (ReflectionProperty $property): bool {
-                    return $property->isPrivate() && !$property->isStatic();
-                }
-            );
-        }
+        $properties = (array) $object;
 
         if ($reflection->hasMethod('__sleep')) {
             $propertiesToKeep = $object->__sleep();
@@ -237,9 +216,7 @@ final class Serializer implements SerializerInterface
 
             $nonExistentProperties = array_diff(
                 $propertiesToKeep,
-                array_map(static function (ReflectionProperty $property): string {
-                    return $property->getName();
-                }, $properties)
+                array_keys($properties)
             );
 
             if ($nonExistentProperties !== []) {
@@ -250,30 +227,17 @@ final class Serializer implements SerializerInterface
 
             $properties = array_filter(
                 $properties,
-                static function (ReflectionProperty $property) use ($propertiesToKeep): bool {
-                    return in_array($property->getName(), $propertiesToKeep, true);
-                }
+                static function (string $name) use ($propertiesToKeep): bool {
+                    return in_array($name, $propertiesToKeep, true);
+                },
+                ARRAY_FILTER_USE_KEY
             );
         }
 
-        /** @var ReflectionProperty[] $serializableProperties */
-        $serializableProperties = array_merge($properties, $privateParentProperties);
-
         $inner = '';
 
-        foreach ($serializableProperties as $property) {
-            $property->setAccessible(true);
-            $propertyName = $property->getName();
-
-            if ($property->isProtected()) {
-                $propertyName = "\0*\0${propertyName}";
-            } elseif ($property->isPrivate()) {
-                $propertyName = "\0{$property->getDeclaringClass()->getName()}\0${propertyName}";
-            }
-
-            $inner .= $this->serialize($propertyName);
-
-            $value = $property->getValue($object);
+        foreach ($properties as $name => $value) {
+            $inner .= $this->serialize((string) $name);
 
             if ($value === $object) {
                 // todo how does this work
@@ -287,7 +251,7 @@ final class Serializer implements SerializerInterface
             'O:%d:"%s":%d:{%s}',
             strlen($className),
             $className,
-            count($serializableProperties),
+            count($properties),
             $inner
         );
     }

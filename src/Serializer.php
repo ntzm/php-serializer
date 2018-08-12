@@ -11,6 +11,7 @@ use ReflectionObject;
 use ReflectionProperty;
 use Serializable;
 use function count;
+use function gettype;
 use function in_array;
 use function is_array;
 use function is_float;
@@ -71,7 +72,7 @@ final class Serializer implements SerializerInterface
             return $this->serializeObject($value);
         }
 
-        if (is_resource($value)) {
+        if (is_resource($value) || gettype($value) === 'resource (closed)') {
             return self::RESOURCE;
         }
     }

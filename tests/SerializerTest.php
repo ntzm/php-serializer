@@ -90,6 +90,14 @@ final class SerializerTest extends TestCase
         ];
     }
 
+    public function testSerializesClosedResource(): void
+    {
+        $closedResource = fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'rb');
+        fclose($closedResource);
+
+        self::assertSame(serialize($closedResource), (new Serializer())->serialize($closedResource));
+    }
+
     /** @dataProvider provideTestDoesNotSerializeClosuresCases */
     public function testDoesNotSerializeClosures($value): void
     {

@@ -231,7 +231,7 @@ final class Serializer implements SerializerInterface
                 }, $properties)
             );
 
-            if (count($nonExistentProperties) !== 0) {
+            if ($nonExistentProperties !== []) {
                 trigger_error(
                     sprintf('"%s" returned as member variable from __sleep() but does not exist', reset($nonExistentProperties))
                 );

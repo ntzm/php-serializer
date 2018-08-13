@@ -212,6 +212,8 @@ final class Serializer implements SerializerInterface
                 trigger_error(
                     '__sleep should return an array only containing the names of instance-variables to serialize'
                 );
+
+                return self::NULL;
             }
 
             $nonExistentProperties = array_diff(
@@ -223,6 +225,8 @@ final class Serializer implements SerializerInterface
                 trigger_error(
                     sprintf('"%s" returned as member variable from __sleep() but does not exist', reset($nonExistentProperties))
                 );
+
+                return self::NULL;
             }
 
             $properties = array_filter(

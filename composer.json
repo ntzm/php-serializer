@@ -13,6 +13,7 @@
         "php": "^7.2"
     },
     "require-dev": {
+        "doctrine/coding-standard": "^5.0",
         "phpstan/phpstan-shim": "^0.10.8",
         "phpunit/phpunit": "^7.1"
     },
@@ -25,5 +26,8 @@
         "psr-4": {
             "Ntzm\\Tests\\Serializer\\": "tests/"
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }

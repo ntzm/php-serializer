@@ -9,9 +9,16 @@ use Closure;
 use Exception;
 use ReflectionObject;
 use Serializable;
+use const ARRAY_FILTER_USE_KEY;
+use const INF;
+use function array_diff;
+use function array_filter;
+use function array_keys;
 use function count;
 use function gettype;
 use function in_array;
+use function ini_get;
+use function ini_set;
 use function is_array;
 use function is_float;
 use function is_int;
@@ -19,21 +26,28 @@ use function is_nan;
 use function is_object;
 use function is_resource;
 use function is_string;
+use function reset;
 use function sprintf;
 use function strlen;
+use function strpos;
+use function trigger_error;
 
 final class Serializer
 {
-    private const NULL = 'N;';
-    private const TRUE = 'b:1;';
-    private const FALSE = 'b:0;';
-    private const NAN = 'd:NAN;';
-    private const INF = 'd:INF;';
+    private const NULL         = 'N;';
+    private const TRUE         = 'b:1;';
+    private const FALSE        = 'b:0;';
+    private const NAN          = 'd:NAN;';
+    private const INF          = 'd:INF;';
     private const NEGATIVE_INF = 'd:-INF;';
-    private const RESOURCE = 'i:0;';
+    private const RESOURCE     = 'i:0;';
 
-    /** @throws Exception */
-    public function serialize($value): string
+    /**
+     * @param mixed $value
+     *
+     * @throws Exception
+     */
+    public function serialize($value) : string
     {
         if ($value instanceof Closure) {
             throw new Exception("Serialization of 'Closure' is not allowed");
@@ -76,17 +90,17 @@ final class Serializer
         }
     }
 
-    private function serializeString(string $string): string
+    private function serializeString(string $string) : string
     {
         return sprintf('s:%d:"%s";', strlen($string), $string);
     }
 
-    private function serializeInt(int $int): string
+    private function serializeInt(int $int) : string
     {
         return sprintf('i:%d;', $int);
     }
 
-    private function serializeFloat(float $float): string
+    private function serializeFloat(float $float) : string
     {
         if ($float === INF) {
             return self::INF;
@@ -110,8 +124,12 @@ final class Serializer
         return $result;
     }
 
-    /** @throws Exception */
-    private function serializeArray(array $array): string
+    /**
+     * @param mixed[] $array
+     *
+     * @throws Exception
+     */
+    private function serializeArray(array $array) : string
     {
         $inner = '';
 
@@ -123,14 +141,18 @@ final class Serializer
             if ($reference === null) {
                 $inner .= $this->serialize($value);
             } else {
-                $inner .= "R:{$reference};";
+                $inner .= sprintf('R%d;', $reference);
             }
         }
 
         return sprintf('a:%d:{%s}', count($array), $inner);
     }
 
-    private function getReferencePosition(array $array, $key): ?int
+    /**
+     * @param mixed[]    $array
+     * @param int|string $key
+     */
+    private function getReferencePosition(array $array, $key) : ?int
     {
         // Start at position 2, as position 1 is the array itself
         $position = 2;
@@ -172,10 +194,10 @@ final class Serializer
     }
 
     /** @throws Exception */
-    private function serializeObject(object $object): string
+    private function serializeObject(object $object) : string
     {
         $reflection = new ReflectionObject($object);
-        $className = $reflection->getName();
+        $className  = $reflection->getName();
 
         if ($object instanceof __PHP_Incomplete_Class) {
             $properties = (array) $object;
@@ -183,7 +205,7 @@ final class Serializer
             $className = $properties['__PHP_Incomplete_Class_Name'];
             unset($properties['__PHP_Incomplete_Class_Name']);
 
-            $object = (object) $properties;
+            $object     = (object) $properties;
             $reflection = new ReflectionObject($object);
         }
 
@@ -208,7 +230,7 @@ final class Serializer
         if ($reflection->hasMethod('__sleep')) {
             $propertiesToKeep = $object->__sleep();
 
-            if (!is_array($propertiesToKeep)) {
+            if (! is_array($propertiesToKeep)) {
                 trigger_error(
                     '__sleep should return an array only containing the names of instance-variables to serialize'
                 );
@@ -223,7 +245,10 @@ final class Serializer
 
             if ($nonExistentProperties !== []) {
                 trigger_error(
-                    sprintf('"%s" returned as member variable from __sleep() but does not exist', reset($nonExistentProperties))
+                    sprintf(
+                        '"%s" returned as member variable from __sleep() but does not exist',
+                        reset($nonExistentProperties)
+                    )
                 );
 
                 return self::NULL;
@@ -231,7 +256,7 @@ final class Serializer
 
             $properties = array_filter(
                 $properties,
-                static function (string $name) use ($propertiesToKeep): bool {
+                static function (string $name) use ($propertiesToKeep) : bool {
                     return in_array($name, $propertiesToKeep, true);
                 },
                 ARRAY_FILTER_USE_KEY

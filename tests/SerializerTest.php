@@ -96,6 +96,7 @@ final class SerializerTest extends TestCase
 
     public function testSerializesClosedResource(): void
     {
+        /** @var resource $closedResource */
         $closedResource = fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'r');
         fclose($closedResource);
 

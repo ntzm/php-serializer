@@ -22,7 +22,7 @@ use function is_string;
 use function sprintf;
 use function strlen;
 
-final class Serializer implements SerializerInterface
+final class Serializer
 {
     private const NULL = 'N;';
     private const TRUE = 'b:1;';

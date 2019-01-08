@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ntzm\Tests\Serializer;
 
 use Exception;
+use Generator;
 use Ntzm\Serializer\Serializer;
 use Ntzm\Tests\Serializer\Fixture\ClassWithInheritedProperties;
 use Ntzm\Tests\Serializer\Fixture\ClassWithProperties;
@@ -29,72 +30,73 @@ final class SerializerTest extends TestCase
         self::assertSame(serialize($value), (new Serializer())->serialize($value));
     }
 
-    public function provideTestCases(): array
+    public function provideTestCases(): Generator
     {
-        $selfReferencingStdClass = new stdClass();
-        $selfReferencingStdClass->a = $selfReferencingStdClass;
+        yield 'empty string' => [''];
+        yield 'normal string' => ['foo'];
+        yield 'string with double quotes' => ['foo"bar'];
+        yield 'string with single quotes' => ['foo\'bar'];
+        yield 'string with multi-byte characters' => ['测试'];
+        yield 'string with emoji' => ['💩💩💩'];
+        yield 'string with invalid UTF-8 sequence' => ["\xB1\x31"];
 
-        $stdClassReferenceInside = new stdClass();
-        $stdClassReferenceInside->a = new stdClass();
-        $stdClassReferenceInside->b = $stdClassReferenceInside->a;
+        yield 'integer zero' => [0];
+        yield 'integer negative zero' => [-0];
+        yield 'normal integer' => [5];
+        yield 'normal negative integer' => [-5];
+        yield 'minimum integer' => [PHP_INT_MIN];
+        yield 'lower than minimum integer' => [-123809128309128301928310293];
+        yield 'maximum integer' => [PHP_INT_MAX];
+        yield 'higher than maximum integer' => [1238102938102938120938121239];
+
+        yield 'float zero' => [0.0];
+        yield 'float with zero decimal' => [1.0];
+        yield 'normal float' => [1.1];
+        yield 'float with huge precision' => [1.132798123791823791283719283712983712983172938127398];
+
+        yield 'null' => [null];
+        yield 'true' => [true];
+        yield 'false' => [false];
+        yield 'infinity' => [INF];
+        yield 'negative infinity' => [-INF];
+        yield 'nan' => [NAN];
+
+        yield 'empty array' => [[]];
 
         $arrayReferenceInside = ['foo', 'bar'];
         $arrayReferenceInside[2] = &$arrayReferenceInside[1];
         $arrayReferenceInside[3] = &$arrayReferenceInside[2];
 
-        return [
-            'empty string' => [''],
-            'normal string' => ['foo'],
-            'string with double quotes' => ['foo"bar'],
-            'string with single quotes' => ['foo\'bar'],
-            'string with multi-byte characters' => ['测试'],
-            'string with emoji' => ['💩💩💩'],
-            'string with invalid UTF-8 sequence' => ["\xB1\x31"],
+        yield 'self-referencing array' => [$arrayReferenceInside];
 
-            'integer zero' => [0],
-            'integer negative zero' => [-0],
-            'normal integer' => [5],
-            'normal negative integer' => [-5],
-            'minimum integer' => [PHP_INT_MIN],
-            'lower than minimum integer' => [-123809128309128301928310293],
-            'maximum integer' => [PHP_INT_MAX],
-            'higher than maximum integer' => [1238102938102938120938121239],
+        yield 'instance' => [new ClassWithProperties()];
+        yield 'instance with inherited properties 1' => [new ClassWithInheritedProperties()];
+        yield 'instance with inherited properties 2' => [(new ClassWithInheritedProperties())->setG('foo')];
+        yield 'instance with properties from trait' => [new ClassWithTraitWithProperties()];
+        yield 'instance with __sleep' => [new ClassWithSleep()];
+        yield 'instance implements serializable' => [new ClassWithSerializable()];
+        yield 'stdclass instance' => [(object) ['foo' => (object) ['bar']]];
+        yield 'empty stdclass' => [new stdClass()];
 
-            'float zero' => [0.0],
-            'float with zero decimal' => [1.0],
-            'normal float' => [1.1],
-            'float with huge precision' => [1.132798123791823791283719283712983712983172938127398],
+        $stdClassReferenceInside = new stdClass();
+        $stdClassReferenceInside->a = new stdClass();
+        $stdClassReferenceInside->b = $stdClassReferenceInside->a;
 
-            'null' => [null],
-            'true' => [true],
-            'false' => [false],
-            'infinity' => [INF],
-            'negative infinity' => [-INF],
-            'nan' => [NAN],
+        yield 'stdclass reference inside' => [$stdClassReferenceInside];
 
-            'empty array' => [[]],
-            'self-referencing array' => [$arrayReferenceInside],
+        $selfReferencingStdClass = new stdClass();
+        $selfReferencingStdClass->a = $selfReferencingStdClass;
 
-            'instance' => [new ClassWithProperties()],
-            'instance with inherited properties 1' => [new ClassWithInheritedProperties()],
-            'instance with inherited properties 2' => [(new ClassWithInheritedProperties())->setG('foo')],
-            'instance with properties from trait' => [new ClassWithTraitWithProperties()],
-            'instance with __sleep' => [new ClassWithSleep()],
-            'instance implements serializable' => [new ClassWithSerializable()],
-            'stdclass instance' => [(object) ['foo' => (object) ['bar']]],
-            'empty stdclass' => [new stdClass()],
-            'stdclass reference inside' => [$stdClassReferenceInside],
-            'self-referencing stdclass' => [$selfReferencingStdClass],
-            'incomplete class' => [unserialize('O:3:"Foo":0:{}')],
-            'incomplete class with inherited properties' => [unserialize("O:3:\"Baz\":1:{s:8:\"\0Foo\0bar\";i:1;}")],
+        yield 'self-referencing stdclass' => [$selfReferencingStdClass];
+        yield 'incomplete class' => [unserialize('O:3:"Foo":0:{}')];
+        yield 'incomplete class with inherited properties' => [unserialize("O:3:\"Baz\":1:{s:8:\"\0Foo\0bar\";i:1;}")];
 
-            'resource' => [fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'rb')],
-        ];
+        yield 'resource' => [fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'r')];
     }
 
     public function testSerializesClosedResource(): void
     {
-        $closedResource = fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'rb');
+        $closedResource = fopen(__DIR__.'/Fixture/ClassWithProperties.php', 'r');
         fclose($closedResource);
 
         self::assertSame(serialize($closedResource), (new Serializer())->serialize($closedResource));
@@ -109,13 +111,11 @@ final class SerializerTest extends TestCase
         (new Serializer())->serialize($value);
     }
 
-    public function provideTestDoesNotSerializeClosuresCases(): array
+    public function provideTestDoesNotSerializeClosuresCases(): Generator
     {
-        return [
-            'closure' => [function (): void {}],
-            'closure in array' => [[function (): void {}]],
-            'closure in object' => [(object) [function (): void {}]],
-        ];
+        yield 'closure' => [function (): void {}];
+        yield 'closure in array' => [[function (): void {}]];
+        yield 'closure in object' => [(object) [function (): void {}]];
     }
 
     public function testSleepWithNonExistentProperties(): void
@@ -151,30 +151,32 @@ final class SerializerTest extends TestCase
         (new Serializer())->serialize($instance);
     }
 
-    public function provideTestDoesNotSerializeAnonymousClassesCases(): array
+    public function provideTestDoesNotSerializeAnonymousClassesCases(): Generator
     {
-        return [
-            'standard' => [new class() {
-            }],
-            'with sleep' => [
-                new class() {
-                    public function __sleep(): array
-                    {
-                        return [];
-                    }
-                },
-            ],
-            'implements serializable' => [
-                new class() implements Serializable {
-                    public function serialize(): void
-                    {
-                    }
+        yield 'standard' => [
+            new class() {
+            },
+        ];
 
-                    public function unserialize($serialized): void
-                    {
-                    }
-                },
-            ],
+        yield 'with sleep' => [
+            new class() {
+                public function __sleep(): array
+                {
+                    return [];
+                }
+            },
+        ];
+
+        yield 'implements serializable' => [
+            new class() implements Serializable {
+                public function serialize(): void
+                {
+                }
+
+                public function unserialize($serialized): void
+                {
+                }
+            },
         ];
     }
 }

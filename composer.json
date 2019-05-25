@@ -13,9 +13,9 @@
         "php": "^7.2"
     },
     "require-dev": {
-        "doctrine/coding-standard": "^5.0",
-        "phpstan/phpstan-shim": "^0.10.8",
-        "phpunit/phpunit": "^7.1"
+        "doctrine/coding-standard": "^6.0",
+        "phpstan/phpstan-shim": "^0.11.7",
+        "phpunit/phpunit": "^8.1"
     },
     "autoload": {
         "psr-4": {

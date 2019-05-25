@@ -136,11 +136,11 @@ final class Serializer
         $currentReferencePosition = 2;
 
         foreach ($array as $key => $value) {
-            $referencePosition = $this->getReferencePosition($array, $key);
+            $referencePosition = $this->getReferencePosition($array, $key, $currentReferencePosition);
 
             $inner .= $this->serialize($key);
 
-            if ($referencePosition === null || $referencePosition >= $currentReferencePosition) {
+            if ($referencePosition === null) {
                 $inner .= $this->serialize($value);
             } else {
                 $inner .= sprintf('R:%d;', $referencePosition);
@@ -156,7 +156,7 @@ final class Serializer
      * @param mixed[]    $array
      * @param int|string $key
      */
-    private function getReferencePosition(array $array, $key) : ?int
+    private function getReferencePosition(array $array, $key, int $currentReferencePosition) : ?int
     {
         $reference = ReflectionReference::fromArrayElement($array, $key);
 
@@ -168,6 +168,10 @@ final class Serializer
         $position = 2;
 
         foreach ($array as $i => $item) {
+            if ($position >= $currentReferencePosition) {
+                return null;
+            }
+
             if ($i === $key) {
                 ++$position;
 

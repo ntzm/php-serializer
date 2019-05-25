@@ -14,7 +14,6 @@ use const ARRAY_FILTER_USE_KEY;
 use const INF;
 use function array_diff;
 use function array_filter;
-use function array_keys;
 use function count;
 use function gettype;
 use function in_array;
@@ -31,6 +30,7 @@ use function reset;
 use function sprintf;
 use function strlen;
 use function strpos;
+use function substr;
 use function trigger_error;
 
 final class Serializer
@@ -132,7 +132,7 @@ final class Serializer
      */
     private function serializeArray(array $array) : string
     {
-        $inner = '';
+        $inner                    = '';
         $currentReferencePosition = 2;
 
         foreach ($array as $key => $value) {
@@ -247,9 +247,23 @@ final class Serializer
                 return self::NULL;
             }
 
+            $longToShortMap = [];
+
+            foreach ($properties as $long => $value) {
+                if (strpos($long, "\0*\0") === 0) {
+                    $short = substr($long, 3);
+                } elseif (strpos($long, sprintf("\0%s\0", $className)) === 0) {
+                    $short = substr($long, strlen($className) + 2);
+                } else {
+                    $short = $long;
+                }
+
+                $longToShortMap[$long] = $short;
+            }
+
             $nonExistentProperties = array_diff(
                 $propertiesToKeep,
-                array_keys($properties)
+                $longToShortMap
             );
 
             if ($nonExistentProperties !== []) {
@@ -265,8 +279,8 @@ final class Serializer
 
             $properties = array_filter(
                 $properties,
-                static function (string $name) use ($propertiesToKeep) : bool {
-                    return in_array($name, $propertiesToKeep, true);
+                static function (string $name) use ($propertiesToKeep, $longToShortMap) : bool {
+                    return in_array($longToShortMap[$name], $propertiesToKeep, true);
                 },
                 ARRAY_FILTER_USE_KEY
             );

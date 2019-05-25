@@ -8,6 +8,7 @@ use __PHP_Incomplete_Class;
 use Closure;
 use Exception;
 use ReflectionObject;
+use ReflectionReference;
 use Serializable;
 use const ARRAY_FILTER_USE_KEY;
 use const INF;
@@ -141,7 +142,7 @@ final class Serializer
             if ($reference === null) {
                 $inner .= $this->serialize($value);
             } else {
-                $inner .= sprintf('R%d;', $reference);
+                $inner .= sprintf('R:%d;', $reference);
             }
         }
 
@@ -154,6 +155,12 @@ final class Serializer
      */
     private function getReferencePosition(array $array, $key) : ?int
     {
+        $reference = ReflectionReference::fromArrayElement($array, $key);
+
+        if ($reference === null) {
+            return null;
+        }
+
         // Start at position 2, as position 1 is the array itself
         $position = 2;
 
@@ -170,23 +177,18 @@ final class Serializer
                 continue;
             }
 
-            // Get the initial value of the element
-            $initial = $array[$key];
+            $otherReference = ReflectionReference::fromArrayElement($array, $i);
 
-            // Set it to a new object, as objects only pass === tests if they
-            // are the same instance
-            $array[$key] = new class() {
-            };
+            if ($otherReference === null) {
+                ++$position;
 
-            // If the current item is the same instance that we just set, we
-            // know they are referencing each other
-            if ($array[$i] === $array[$key]) {
-                $array[$key] = $initial;
+                continue;
+            }
 
+            if ($reference->getId() === $otherReference->getId()) {
                 return $position;
             }
 
-            $array[$key] = $initial;
             ++$position;
         }
 

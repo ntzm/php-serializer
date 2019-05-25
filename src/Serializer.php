@@ -133,17 +133,20 @@ final class Serializer
     private function serializeArray(array $array) : string
     {
         $inner = '';
+        $currentReferencePosition = 2;
 
         foreach ($array as $key => $value) {
-            $reference = $this->getReferencePosition($array, $key);
+            $referencePosition = $this->getReferencePosition($array, $key);
 
             $inner .= $this->serialize($key);
 
-            if ($reference === null) {
+            if ($referencePosition === null || $referencePosition >= $currentReferencePosition) {
                 $inner .= $this->serialize($value);
             } else {
-                $inner .= sprintf('R:%d;', $reference);
+                $inner .= sprintf('R:%d;', $referencePosition);
             }
+
+            ++$currentReferencePosition;
         }
 
         return sprintf('a:%d:{%s}', count($array), $inner);

@@ -281,7 +281,7 @@ final class Serializer
         $inner = '';
 
         foreach ($properties as $name => $value) {
-            $inner .= $this->serialize((string) $name);
+            $inner .= $this->serializeString((string) $name);
 
             if ($value === $object) {
                 // todo how does this work

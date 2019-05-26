@@ -69,6 +69,12 @@ final class SerializerTest extends TestCase
 
         yield 'self-referencing array' => [$arrayReferenceInside];
 
+        $typed = new class {
+            public int $a = 1;
+        };
+
+        yield 'array element referencing typed property' => [[&$typed->a]];
+
         yield 'instance' => [new ClassWithProperties()];
         yield 'instance with inherited properties 1' => [new ClassWithInheritedProperties()];
         yield 'instance with inherited properties 2' => [(new ClassWithInheritedProperties())->setG('foo')];

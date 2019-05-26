@@ -9,9 +9,12 @@ use Generator;
 use Ntzm\Serializer\Serializer;
 use Ntzm\Tests\Serializer\Fixture\ClassWithInheritedProperties;
 use Ntzm\Tests\Serializer\Fixture\ClassWithMagicSerialize;
+use Ntzm\Tests\Serializer\Fixture\ClassWithMagicSerializeAndSerializable;
+use Ntzm\Tests\Serializer\Fixture\ClassWithMagicSerializeAndSleep;
 use Ntzm\Tests\Serializer\Fixture\ClassWithProperties;
 use Ntzm\Tests\Serializer\Fixture\ClassWithSerializable;
 use Ntzm\Tests\Serializer\Fixture\ClassWithSleep;
+use Ntzm\Tests\Serializer\Fixture\ClassWithSleepAndSerializable;
 use Ntzm\Tests\Serializer\Fixture\ClassWithSleepInParentReferencingPrivateProperty;
 use Ntzm\Tests\Serializer\Fixture\ClassWithSleepReturningNonArray;
 use Ntzm\Tests\Serializer\Fixture\ClassWithSleepWithNonExistentProperties;
@@ -83,6 +86,9 @@ final class SerializerTest extends TestCase
         yield 'instance with __sleep' => [new ClassWithSleep()];
         yield 'instance with __serialize' => [new ClassWithMagicSerialize()];
         yield 'instance implements serializable' => [new ClassWithSerializable()];
+        yield 'instance with __serialize and serializable' => [new ClassWithMagicSerializeAndSerializable()];
+        yield 'instance with __serialize and __sleep' => [new ClassWithMagicSerializeAndSleep()];
+        yield 'instance with __sleep and serializable' => [new ClassWithSleepAndSerializable()];
         yield 'stdclass instance' => [(object) ['foo' => (object) ['bar']]];
         yield 'empty stdclass' => [new stdClass()];
 

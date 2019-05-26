@@ -172,15 +172,8 @@ final class Serializer
                 return null;
             }
 
-            if ($i === $key) {
+            if ($i === $key || $array[$i] !== $array[$key]) {
                 ++$position;
-
-                continue;
-            }
-
-            if ($array[$i] !== $array[$key]) {
-                ++$position;
-
                 continue;
             }
 
@@ -188,7 +181,6 @@ final class Serializer
 
             if ($otherReference === null) {
                 ++$position;
-
                 continue;
             }
 

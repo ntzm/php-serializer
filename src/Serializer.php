@@ -214,6 +214,23 @@ final class Serializer
             throw new Exception("Serialization of 'class@anonymous' is not allowed");
         }
 
+        if ($reflection->hasMethod('__serialize')) {
+            $inner  = '';
+            $values = $object->__serialize();
+
+            foreach ($values as $key => $value) {
+                $inner .= $this->serialize($key) . $this->serialize($value);
+            }
+
+            return sprintf(
+                'O:%d:"%s":%d:{%s}',
+                strlen($className),
+                $className,
+                count($values),
+                $inner
+            );
+        }
+
         if ($object instanceof Serializable) {
             $inner = $object->serialize();
 

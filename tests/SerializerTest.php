@@ -8,6 +8,7 @@ use Exception;
 use Generator;
 use Ntzm\Serializer\Serializer;
 use Ntzm\Tests\Serializer\Fixture\ClassWithInheritedProperties;
+use Ntzm\Tests\Serializer\Fixture\ClassWithMagicSerialize;
 use Ntzm\Tests\Serializer\Fixture\ClassWithProperties;
 use Ntzm\Tests\Serializer\Fixture\ClassWithSerializable;
 use Ntzm\Tests\Serializer\Fixture\ClassWithSleep;
@@ -80,6 +81,7 @@ final class SerializerTest extends TestCase
         yield 'instance with inherited properties 2' => [(new ClassWithInheritedProperties())->setG('foo')];
         yield 'instance with properties from trait' => [new ClassWithTraitWithProperties()];
         yield 'instance with __sleep' => [new ClassWithSleep()];
+        yield 'instance with __serialize' => [new ClassWithMagicSerialize()];
         yield 'instance implements serializable' => [new ClassWithSerializable()];
         yield 'stdclass instance' => [(object) ['foo' => (object) ['bar']]];
         yield 'empty stdclass' => [new stdClass()];
